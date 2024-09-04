@@ -1,0 +1,25 @@
+import {Slider, Button} from "std-widgets.slint";
+
+export component MainWindow inherits Window {
+    callback oreo;
+    preferred-height: 300px;
+    preferred-width : 400px;
+    min-width: 300px;
+    property <float> value;
+    property <string> check;
+    VerticalLayout {
+    Rectangle {
+        preferred-height: 200px;
+        preferred-width: 400px;
+        Text { text: "hello world : " + value;}
+    }      
+    oreo := Button {
+            width : parent.width * 0.75;
+            height : 50px;
+            text : "Click me";
+            clicked => { root.oreo(); }
+
+        }  
+    }  
+}
+
