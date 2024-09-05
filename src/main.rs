@@ -5,7 +5,7 @@ mod func;
 use func::{charray, warray};
 
 slint::slint!{
-    import "./JetBrainsMono.ttf";
+    import "src/JetBrainsMono.ttf";
     import { Button, VerticalBox, Switch, GridBox } from "std-widgets.slint";
     export component Window inherits Window {
         in property <string> result : " ";
@@ -16,36 +16,36 @@ slint::slint!{
 
 
         preferred-height: 500px;
-        preferred-width : 700px;
-        min-width: 300px;
+        preferred-width : 500px;
+        min-height : 400px;
         VerticalLayout {
         Rectangle {
             preferred-height: 200px;
-            preferred-width: 400px;
-            Text { font-family : JetBrains; font-size : 50px; text: result;}
+            preferred-width: 500px;
+            Text { font-family : "JetBrains Mono"; font-size : 30px; text: result;}
         }      
         GridLayout {
             Row {
                 symbols := Switch {
-                    width : 200px;
+                    width : 150px;
                     height : 50px;
                     text : "Symbols";
                     }
             numbers := Switch {
-                    width : 200px;
+                    width : 150px;
                     height : 50px;
                     text : "Numbers";
                         }
                 }
             Row {
                 capitals := Switch {
-                    width : 200px;
+                    width : 150px;
                     height : 50px;
                     text : "Capital";
                     }
 
                 words := Switch {
-                    width : 200px;
+                    width : 150px;
                     height : 50px;
                     text : "Words";
                 }
