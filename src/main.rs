@@ -5,6 +5,7 @@ mod func;
 use func::{charray, warray};
 
 slint::slint!{
+    import "./JetBrainsMono.ttf";
     import { Button, VerticalBox, Switch, GridBox } from "std-widgets.slint";
     export component Window inherits Window {
         in property <string> result : " ";
@@ -14,14 +15,14 @@ slint::slint!{
         callback wortoggled <=> words.toggled;
 
 
-        preferred-height: 300px;
+        preferred-height: 500px;
         preferred-width : 700px;
         min-width: 300px;
         VerticalLayout {
         Rectangle {
             preferred-height: 200px;
             preferred-width: 400px;
-            Text { font-size : 50px; text: result;}
+            Text { font-family : JetBrains; font-size : 50px; text: result;}
         }      
         GridLayout {
             Row {
@@ -81,12 +82,15 @@ fn main() {
         *sym_val = !*sym_val; // Toggle the value
 
         // Use the updated values
-        let string = charray(15, *caps_clone.borrow(), *num_clone.borrow(), *sym_val);
+        let string = if *word_clone.borrow() {
+            warray(15, *caps_clone.borrow(), *num_clone.borrow(), *sym_val, '-')
+        } else {
+            charray(15, *caps_clone.borrow(), *num_clone.borrow(), *sym_val)
+        };
+
         let string = SharedString::from(string);
 
-        println!("Symbols: {}", *sym_val);
-        println!("Numbers: {}", *num_clone.borrow());
-        println!("Capitls: {}", *caps_clone.borrow());
+        println!("\nSymbols: {}", *sym_val);
 
         app.set_result(string);
     });
@@ -106,12 +110,15 @@ fn main() {
         *nums_value = !*nums_value; // Toggle the value
 
         // Use the updated values
-        let string = charray(15, *caps_clone.borrow(), *nums_value, *sym_clone.borrow());
+        let string = if *word_clone.borrow() {
+            warray(15, *caps_clone.borrow(), *nums_value, *sym_clone.borrow(), '-')
+        } else {
+            charray(15, *caps_clone.borrow(), *nums_value, *sym_clone.borrow())
+        };
         let string = SharedString::from(string);
 
-        println!("Symbols: {}", *sym_clone.borrow());
-        println!("Numbers: {}", *nums_value);
-        println!("Capitls: {}", *caps_clone.borrow());
+        
+        println!("\nNumbers: {}", *nums_value);
         app.set_result(string);
     });
 
@@ -128,12 +135,14 @@ fn main() {
         let mut caps_val = cap_clone.borrow_mut();
         *caps_val = !*caps_val;
 
-        let string = charray(15, *caps_val, *num_clone.borrow(), *sym_clone.borrow());
+        let string = if *word_clone.borrow() {
+            warray(15, *caps_val, *num_clone.borrow(), *sym_clone.borrow(), '-')
+        } else {
+            charray(15, *caps_val, *num_clone.borrow(), *sym_clone.borrow())
+        };
         let string = SharedString::from(string);
 
-        println!("\nSymbols : {}", *sym_clone.borrow());
-        println!("Numbers : {}", *num_clone.borrow());
-        println!("Capitls : {}", *caps_val);
+        println!("\nCapitls : {}", *caps_val);
 
         app.set_result(string);
     });
@@ -144,59 +153,24 @@ fn main() {
     let cap_clone = Rc::clone(&caps);
     let word_clone = Rc::clone(&word);
 
-    window.on_captoggled(move || {
+    window.on_wortoggled(move || {
         let app =  word_toggle.upgrade().unwrap();
-        let wor_val = word_clone.borrow_mut();
-        *word_val = !*word_val;
+        let mut wor_val = word_clone.borrow_mut();
+        *wor_val = !*wor_val;
 
-        if word_val {
-            warray(15, );
-        }
-    })
+        let string = if *wor_val {
+            warray(15, *cap_clone.borrow(), *num_clone.borrow(), *sym_clone.borrow(), '-')
+        } else {
+            charray(15, *cap_clone.borrow(), *num_clone.borrow(), *sym_clone.borrow())
+        };
+        let string = SharedString::from(string);
+
+        println!("\nWord : {}", *wor_val);
+        app.set_result(string);
+    });
 
     window.run().unwrap();
 }
 
-/*fn main() {
-    let window = Window::new().unwrap();
-    let mut nums = false;
-    let mut symbols = false;
-    let mut caps = false;
-    let mut symbols = false;
 
 
-
-    let symbol_toggle = window.as_weak();
-    window.on_symtoggled(move || {
-            println!("{symbols}");
-            let app = symbol_toggle.upgrade().unwrap();
-            println!("{symbols}");
-            let string = charray(15, caps, nums, toggle(&mut symbols));
-            let string = SharedString::from(string);
-            println!("Symbols : {}", symbols);
-            println!("Numbers : {}", nums);
-            app.set_result(string);
-
-
-
-    let number_toggle = window.as_weak();
-    window.on_numtoggled(move || {
-            let app = number_toggle.upgrade().unwrap();
-            let string = SharedString::from(charray(15, caps, toggle(&mut nums), symbols));
-            println!("Symbols : {}", symbols);
-            println!("Numbers : {}", nums);
-            app.set_result(string);}
-    );
-
-    window.run().unwrap();
-}*/
-
-
-fn toggle(flag : &mut bool) -> bool {
-    *flag = !*flag;
-    *flag
-}
-
-/*fn bool (flag : AtomicBool) -> bool {
-    flag.load(Ordering::SeqCst)
-}*/

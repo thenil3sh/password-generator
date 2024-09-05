@@ -62,37 +62,6 @@ const WARRAY : [&str; 451]= [
         "brochure", "map", "radio", "environment", "region", "self", "show", "fire", "shot", "growth",
         "second", "pollution", "science", "nature", "product", "television", "theory", "month", "church", "pupil"];
 
-const CAPWARRAY : [&str; 280] = [
-    "Time", "Year", "People", "Way", "Day", "Man", "Thing", "Woman", "Life", "Child",
-    "World", "School", "State", "Family", "Student", "Group", "Country", "Problem", "Hand", "Part",
-    "Place", "Case", "Week", "Company", "System", "Program", "Question", "Work", "Government", "Number",
-    "Night", "Point", "Home", "Water", "Room", "Mother", "Area", "Money", "Story", "Fact",
-    "Month", "Lot", "Right", "Study", "Book", "Eye", "Job", "Word", "Business", "Issue",
-    "Side", "Kind", "Head", "House", "Service", "Friend", "Father", "Power", "Hour", "Game",
-    "Line", "End", "Member", "Law", "Car", "City", "Community", "Name", "President", "Team",
-    "Minute", "Idea", "Kid", "Body", "Information", "Back", "Parent", "Face", "Others", "Level",
-    "Office", "Door", "Health", "Person", "Art", "War", "History", "Party", "Result", "Change",
-    "Morning", "Reason", "Research", "Girl", "Guy", "Moment", "Air", "Teacher", "Force", "Education",
-    "Foot", "Boy", "Age", "Policy", "Process", "Music", "Market", "Sense", "Nation", "Plan",
-    "College", "Interest", "Death", "Experience", "Effect", "Use", "Class", "Control", "Care", "Field",
-    "Development", "Role", "Effort", "Rate", "Heart", "Drug", "Show", "Leader", "Light", "Voice",
-    "Wife", "Police", "Mind", "Price", "Report", "Decision", "Son", "View", "Relationship", "Town",
-    "Road", "Arm", "Difference", "Value", "Building", "Action", "Model", "Season", "Society", "Tax",
-    "Director", "Position", "Player", "Record", "Paper", "Space", "Ground", "Form", "Event", "Official",
-    "Matter", "Center", "Couple", "Site", "Project", "Activity", "Star", "Table", "Need", "Court",
-    "Oil", "Situation", "Cost", "Industry", "Figure", "Street", "Image", "Phone", "Data", "Picture",
-    "Practice", "Piece", "Land", "Product", "Doctor", "Wall", "Patient", "Worker", "News", "Test",
-    "Movie", "North", "Love", "Support", "Technology", "Step", "Baby", "Computer", "Type", "Attention",
-    "Film", "Tree", "Source", "Organization", "Hair", "Look", "Science", "Owner", "Brother", "Window",
-    "Skill", "Sport", "Board", "Subject", "Officer", "Rest", "Range", "Trade", "Past", "Goal",
-    "Amount", "Audience", "Letter", "Risk", "Character", "Growth", "Degree", "Attack", "Region", "Television",
-    "Box", "TV", "Training", "Style", "Camera", "Horse", "Painting", "Patient", "Truck", "Debt",
-    "Staff", "Paper", "Animal", "Dog", "Bird", "Cut", "Food", "Agreement", "Leader", "Salt",
-    "Character", "Boat", "Winter", "Tree", "Voice", "Skin", "Wind", "Track", "Language", "Chance",
-    "Brochure", "Map", "Radio", "Environment", "Region", "Self", "Show", "Fire", "Shot", "Growth",
-    "Second", "Pollution", "Science", "Nature", "Product", "Television", "Theory", "Month", "Church", "Pupil"
-];
-
 
 
 const CAPLARRAY : [char; 26]= ['A', 'B', 'C', 'D',
@@ -171,7 +140,7 @@ pub fn charray(len : u8, capl : bool, n : bool, s : bool) -> String {
 
 }
 
-pub fn warray (len : u8, capital : bool, numbers : bool, symbols : bool, delimeter : char){
+pub fn warray (len : u8, capital : bool, numbers : bool, symbols : bool, delimeter : char) -> String {
     let mut oreo = String::new();
     let mut i : u8 =  0;
     let mut chances = vec![];
@@ -195,7 +164,7 @@ pub fn warray (len : u8, capital : bool, numbers : bool, symbols : bool, delimet
             i += 1;
         }
     }
-    println!("{}", oreo);
+    oreo
 }
 
 fn camelcased(word : &str) -> String {
