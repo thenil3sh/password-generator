@@ -1,25 +1,108 @@
-import {Slider, Button} from "std-widgets.slint";
 
-export component MainWindow inherits Window {
-    callback oreo;
-    preferred-height: 300px;
-    preferred-width : 400px;
+import "./JetBrainsMono.ttf";
+import "./JetBrainsMono-Light.ttf";
+import { Button, VerticalBox, Switch, GridBox, Slider, AboutSlint, HorizontalBox } from "std-widgets.slint";
+
+
+export component AppWindow inherits Window {
+    in property <string> result: "Generates a password";
+    in property <bool> symbol: false;
+    out property <float> length: 6;
+    callback symtoggled <=> symbols.toggled;
+    callback numtoggled <=> numbers.toggled;
+    callback captoggled <=> capitals.toggled;
+    callback wortoggled <=> words.toggled;
+    title : "Password Generator";
+
+    min-height: 400px;
     min-width: 300px;
-    property <float> value;
-    property <string> check;
-    VerticalLayout {
-    Rectangle {
-        preferred-height: 200px;
-        preferred-width: 400px;
-        Text { text: "hello world : " + value;}
-    }      
-    oreo := Button {
-            width : parent.width * 0.75;
-            height : 50px;
-            text : "Click me";
-            clicked => { root.oreo(); }
+    Main := Rectangle {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        VerticalLayout {
+            alignment: center;
 
-        }  
-    }  
+            Rectangle {
+                width: Main.width;
+                height: Main.height * 40%;
+                Text {
+                    font-family: "JetBrains Mono";
+                    font-size: 32px;
+                    text: result;
+                    wrap: word-wrap;
+                    width: Main.width * 70%;
+                    horizontal-alignment: center;
+                }
+            }
+
+            Rectangle {
+                width: Main.width;
+                height: 50px;
+                slide := Slider {
+                    height: parent.height;
+                    enabled: true;
+                    minimum: 6;
+                    maximum: 50;
+                    width: Main.width * 70%;
+                    changed(oreo) => {
+                        length = floor(oreo);
+                    }
+                }
+
+                //x : Main.width * 20%;
+                }
+
+            Rectangle {
+                width: Main.width;
+                height: 20px;
+                Text {
+                    text: "Password Length : " + length;
+                    font-family : "JetBrains Mono NL";
+                }
+            }
+
+            HorizontalLayout {
+                alignment: center;
+                width: Main.width;
+                VerticalLayout {
+                    alignment: center;
+                    symbols := Switch {
+                        accessible-role: AccessibleRole.none;
+                        width: 150px;
+                        text: "Symbols";
+                        //x: slide.width / 80 * 30;
+                }
+                }
+
+                VerticalLayout {
+                    alignment: center;
+                    numbers := Switch {
+                        width: 140px;
+                        height: 50px;
+                        text: "Numbers";
+                        //x: slide.width / 80 * 30;
+            }
+                }
+            }
+
+            HorizontalLayout {
+                alignment: center;
+                capitals := Switch {
+                    width: 150px;
+                    height: 50px;
+                    text: "Capital";
+                    //x: slide.width / 80 * 30;
+            }
+
+                words := Switch {
+                    width: 140px;
+                    height: 50px;
+                    text: "Words";
+                    //x: slide.width / 80 * 30;
+            }
+            }
+        }
+    }
 }
-

@@ -1,65 +1,12 @@
-use std::rc::Rc;
-use std::cell::RefCell;
 use slint::SharedString;
+use std::cell::RefCell;
+use std::rc::Rc;
 mod func;
 use func::{charray, warray};
-
-slint::slint!{
-    import "src/JetBrainsMono.ttf";
-    import { Button, VerticalBox, Switch, GridBox } from "std-widgets.slint";
-    export component Window inherits Window {
-        in property <string> result : " ";
-        callback symtoggled <=> symbols.toggled;
-        callback numtoggled <=> numbers.toggled;
-        callback captoggled <=> capitals.toggled;
-        callback wortoggled <=> words.toggled;
-
-
-        preferred-height: 500px;
-        preferred-width : 500px;
-        min-height : 400px;
-        VerticalLayout {
-        Rectangle {
-            preferred-height: 200px;
-            preferred-width: 500px;
-            Text { font-family : "JetBrains Mono"; font-size : 30px; text: result;}
-        }      
-        GridLayout {
-            Row {
-                symbols := Switch {
-                    width : 150px;
-                    height : 50px;
-                    text : "Symbols";
-                    }
-            numbers := Switch {
-                    width : 150px;
-                    height : 50px;
-                    text : "Numbers";
-                        }
-                }
-            Row {
-                capitals := Switch {
-                    width : 150px;
-                    height : 50px;
-                    text : "Capital";
-                    }
-
-                words := Switch {
-                    width : 150px;
-                    height : 50px;
-                    text : "Words";
-                }
-
-            }
-            }
-        }  
-    }
-}
-
-
+slint::include_modules!();
 
 fn main() {
-    let window = Window::new().unwrap();
+    let window = AppWindow::new().unwrap();
 
     // Wrap booleans in Rc<RefCell> to allow shared mutable access
     let symbols = Rc::new(RefCell::new(false));
@@ -111,17 +58,21 @@ fn main() {
 
         // Use the updated values
         let string = if *word_clone.borrow() {
-            warray(15, *caps_clone.borrow(), *nums_value, *sym_clone.borrow(), '-')
+            warray(
+                15,
+                *caps_clone.borrow(),
+                *nums_value,
+                *sym_clone.borrow(),
+                '-',
+            )
         } else {
             charray(15, *caps_clone.borrow(), *nums_value, *sym_clone.borrow())
         };
         let string = SharedString::from(string);
 
-        
         println!("\nNumbers: {}", *nums_value);
         app.set_result(string);
     });
-
 
     let capital_toggle = window.as_weak();
     let sym_clone = Rc::clone(&symbols);
@@ -154,14 +105,25 @@ fn main() {
     let word_clone = Rc::clone(&word);
 
     window.on_wortoggled(move || {
-        let app =  word_toggle.upgrade().unwrap();
+        let app = word_toggle.upgrade().unwrap();
         let mut wor_val = word_clone.borrow_mut();
         *wor_val = !*wor_val;
 
         let string = if *wor_val {
-            warray(15, *cap_clone.borrow(), *num_clone.borrow(), *sym_clone.borrow(), '-')
+            warray(
+                15,
+                *cap_clone.borrow(),
+                *num_clone.borrow(),
+                *sym_clone.borrow(),
+                '-',
+            )
         } else {
-            charray(15, *cap_clone.borrow(), *num_clone.borrow(), *sym_clone.borrow())
+            charray(
+                15,
+                *cap_clone.borrow(),
+                *num_clone.borrow(),
+                *sym_clone.borrow(),
+            )
         };
         let string = SharedString::from(string);
 
@@ -171,6 +133,3 @@ fn main() {
 
     window.run().unwrap();
 }
-
-
-
