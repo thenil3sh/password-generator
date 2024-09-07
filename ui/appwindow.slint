@@ -7,15 +7,17 @@ import { Button, VerticalBox, Switch, GridBox, Slider, AboutSlint, HorizontalBox
 export component AppWindow inherits Window {
     in property <string> result: "Generates a password";
     in property <bool> symbol: false;
-    out property <float> length: 6;
+    out property <int> length: 6;
+    out property <int> last_length;
+
     callback symtoggled <=> symbols.toggled;
     callback numtoggled <=> numbers.toggled;
     callback captoggled <=> capitals.toggled;
     callback wortoggled <=> words.toggled;
-    title : "Password Generator";
- 
-    min-height: 400px;
-    min-width: 300px;
+    callback len_mod(int);
+    title: "Password Generator";
+    min-height: 500px;
+    min-width: 350px;
     Main := Rectangle {
         x: 0px;
         y: 0px;
@@ -44,10 +46,14 @@ export component AppWindow inherits Window {
                     height: parent.height;
                     enabled: true;
                     minimum: 6;
-                    maximum: 50;
+                    maximum: 30;
                     width: Main.width * 70%;
                     changed(oreo) => {
-                        length = floor(oreo);
+                        if last_length != floor(oreo) {
+                            length = floor(oreo);
+                            last_length = length;
+                            len_mod(length);
+                        }
                     }
                 }
 
@@ -59,7 +65,7 @@ export component AppWindow inherits Window {
                 height: 20px;
                 Text {
                     text: "Password Length : " + length;
-                    font-family : "JetBrains Mono NL";
+                    font-family: "JetBrains Mono NL";
                 }
             }
 

@@ -1,7 +1,7 @@
 use slint::SharedString;
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 mod func;
+
 use func::{charray, warray};
 slint::include_modules!();
 
@@ -9,17 +9,52 @@ fn main() {
     let window = AppWindow::new().unwrap();
 
     // Wrap booleans in Rc<RefCell> to allow shared mutable access
+    let length : Rc<RefCell<u8>> = Rc::new(RefCell::new(6));
     let symbols = Rc::new(RefCell::new(false));
     let nums = Rc::new(RefCell::new(false));
     let caps = Rc::new(RefCell::new(false));
     let word = Rc::new(RefCell::new(false));
+    //let string = Rc::new(RefCell::new(""));
 
-    // Clone references for the symbol_toggle closure
-    let sym_toggle = window.as_weak();
+    // Clones for Slider : 
+    let len_slide = window.as_weak();
+    let len_clone = Rc::clone(&length);
     let sym_clone = Rc::clone(&symbols);
     let num_clone = Rc::clone(&nums);
     let caps_clone = Rc::clone(&caps);
     let word_clone = Rc::clone(&word);
+    //let string_clone = Rc::clone(&string);
+
+    window.on_len_mod(move |length| {
+        let app = len_slide.upgrade().unwrap();
+
+        let mut len_val = len_clone.borrow_mut();
+        *len_val = length as u8;
+
+        let string = if *word_clone.borrow() {
+            warray(*len_val, *caps_clone.borrow(), *num_clone.borrow(), *sym_clone.borrow(), '-')
+        } else {
+            charray(*len_val, *caps_clone.borrow(), *num_clone.borrow(), *sym_clone.borrow())
+        };
+
+        let string = SharedString::from(string);
+        app.set_result(string.clone());
+        //let mut copy = string_clone.borrow_mut();
+        //let binding = string.clone();
+        
+    });
+
+
+    
+    // Clone references for the symbol_toggle closure
+    let sym_toggle = window.as_weak();
+    let len_clone = Rc::clone(&length);
+    let sym_clone = Rc::clone(&symbols);
+    let num_clone = Rc::clone(&nums);
+    let caps_clone = Rc::clone(&caps);
+    let word_clone = Rc::clone(&word);
+
+
 
     window.on_symtoggled(move || {
         let app = sym_toggle.upgrade().unwrap();
@@ -30,9 +65,9 @@ fn main() {
 
         // Use the updated values
         let string = if *word_clone.borrow() {
-            warray(15, *caps_clone.borrow(), *num_clone.borrow(), *sym_val, '-')
+            warray(*len_clone.borrow(), *caps_clone.borrow(), *num_clone.borrow(), *sym_val, '-')
         } else {
-            charray(15, *caps_clone.borrow(), *num_clone.borrow(), *sym_val)
+            charray(*len_clone.borrow(), *caps_clone.borrow(), *num_clone.borrow(), *sym_val)
         };
 
         let string = SharedString::from(string);
@@ -44,6 +79,7 @@ fn main() {
 
     // Clone references for the number_toggle closure
     let number_toggle = window.as_weak();
+    let len_clone = Rc::clone(&length);
     let sym_clone = Rc::clone(&symbols);
     let num_clone = Rc::clone(&nums);
     let caps_clone = Rc::clone(&caps);
@@ -59,14 +95,14 @@ fn main() {
         // Use the updated values
         let string = if *word_clone.borrow() {
             warray(
-                15,
+                *len_clone.borrow(),
                 *caps_clone.borrow(),
                 *nums_value,
                 *sym_clone.borrow(),
                 '-',
             )
         } else {
-            charray(15, *caps_clone.borrow(), *nums_value, *sym_clone.borrow())
+            charray(*len_clone.borrow(), *caps_clone.borrow(), *nums_value, *sym_clone.borrow())
         };
         let string = SharedString::from(string);
 
@@ -75,6 +111,7 @@ fn main() {
     });
 
     let capital_toggle = window.as_weak();
+    let len_clone = Rc::clone(&length);
     let sym_clone = Rc::clone(&symbols);
     let num_clone = Rc::clone(&nums);
     let cap_clone = Rc::clone(&caps);
@@ -87,9 +124,9 @@ fn main() {
         *caps_val = !*caps_val;
 
         let string = if *word_clone.borrow() {
-            warray(15, *caps_val, *num_clone.borrow(), *sym_clone.borrow(), '-')
+            warray(*len_clone.borrow(), *caps_val, *num_clone.borrow(), *sym_clone.borrow(), '-')
         } else {
-            charray(15, *caps_val, *num_clone.borrow(), *sym_clone.borrow())
+            charray(*len_clone.borrow(), *caps_val, *num_clone.borrow(), *sym_clone.borrow())
         };
         let string = SharedString::from(string);
 
@@ -99,6 +136,7 @@ fn main() {
     });
 
     let word_toggle = window.as_weak();
+    let len_clone = Rc::clone(&length);
     let sym_clone = Rc::clone(&symbols);
     let num_clone = Rc::clone(&nums);
     let cap_clone = Rc::clone(&caps);
@@ -111,7 +149,7 @@ fn main() {
 
         let string = if *wor_val {
             warray(
-                15,
+                *len_clone.borrow(),
                 *cap_clone.borrow(),
                 *num_clone.borrow(),
                 *sym_clone.borrow(),
@@ -119,7 +157,7 @@ fn main() {
             )
         } else {
             charray(
-                15,
+                *len_clone.borrow(),
                 *cap_clone.borrow(),
                 *num_clone.borrow(),
                 *sym_clone.borrow(),
@@ -130,6 +168,8 @@ fn main() {
         println!("\nWord : {}", *wor_val);
         app.set_result(string);
     });
+
+
 
     window.run().unwrap();
 }
