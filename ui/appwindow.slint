@@ -9,14 +9,18 @@ export component AppWindow inherits Window {
     in property <bool> symbol: false;
     out property <int> length: 6;
     out property <int> last_length;
+    in-out property <string> copy_state: "Copy Password";
 
     callback symtoggled <=> symbols.toggled;
     callback numtoggled <=> numbers.toggled;
     callback captoggled <=> capitals.toggled;
     callback wortoggled <=> words.toggled;
     callback len_mod(int);
+    callback copy_clicked <=> copy.clicked;
+
+
     title: "Password Generator";
-    min-height: 500px;
+    min-height: 400px;
     min-width: 350px;
     Main := Rectangle {
         x: 0px;
@@ -108,6 +112,25 @@ export component AppWindow inherits Window {
                     text: "Words";
                     //x: slide.width / 80 * 30;
             }
+            }
+
+            Rectangle {
+                width: Main.width;
+                height: 50px;
+                VerticalLayout {
+                    alignment: center;
+                    HorizontalLayout {
+                        alignment: center;
+                        copy := Button {
+                            width: Main.width * 80%;
+                            height: Main.height * 7%;
+                            text: copy_state;
+                            clicked => {
+                                self.text = copy_state;
+                            }
+                        }
+                    }
+                }
             }
         }
     }

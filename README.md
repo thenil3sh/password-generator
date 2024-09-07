@@ -1,6 +1,6 @@
-# Slint Rust Template
+# Password Generator
 
-A template for a Rust application that's using [Slint](https://slint.rs) for the user interface.
+Just a password generator, yep, thats it
 
 ## About
 

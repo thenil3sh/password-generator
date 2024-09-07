@@ -1,7 +1,7 @@
 use slint::SharedString;
 use std::{cell::RefCell, rc::Rc};
 mod func;
-
+use clipboard::{ClipboardContext, ClipboardProvider};
 use func::{charray, warray};
 slint::include_modules!();
 
@@ -14,7 +14,6 @@ fn main() {
     let nums = Rc::new(RefCell::new(false));
     let caps = Rc::new(RefCell::new(false));
     let word = Rc::new(RefCell::new(false));
-    //let string = Rc::new(RefCell::new(""));
 
     // Clones for Slider : 
     let len_slide = window.as_weak();
@@ -23,7 +22,6 @@ fn main() {
     let num_clone = Rc::clone(&nums);
     let caps_clone = Rc::clone(&caps);
     let word_clone = Rc::clone(&word);
-    //let string_clone = Rc::clone(&string);
 
     window.on_len_mod(move |length| {
         let app = len_slide.upgrade().unwrap();
@@ -38,9 +36,8 @@ fn main() {
         };
 
         let string = SharedString::from(string);
-        app.set_result(string.clone());
-        //let mut copy = string_clone.borrow_mut();
-        //let binding = string.clone();
+        app.set_copy_state(SharedString::from("Copy Password"));
+        app.set_result(string);
         
     });
 
@@ -73,7 +70,7 @@ fn main() {
         let string = SharedString::from(string);
 
         println!("\nSymbols: {}", *sym_val);
-
+        app.set_copy_state(SharedString::from("Copy Password"));
         app.set_result(string);
     });
 
@@ -107,6 +104,7 @@ fn main() {
         let string = SharedString::from(string);
 
         println!("\nNumbers: {}", *nums_value);
+        app.set_copy_state(SharedString::from("Copy Password"));
         app.set_result(string);
     });
 
@@ -131,7 +129,7 @@ fn main() {
         let string = SharedString::from(string);
 
         println!("\nCapitls : {}", *caps_val);
-
+        app.set_copy_state(SharedString::from("Copy Password"));
         app.set_result(string);
     });
 
@@ -166,9 +164,20 @@ fn main() {
         let string = SharedString::from(string);
 
         println!("\nWord : {}", *wor_val);
+        app.set_copy_state(SharedString::from("Copy Password"));
         app.set_result(string);
     });
 
+    let copy_btn = window.as_weak();
+    window.on_copy_clicked(move || {
+        let app = copy_btn.upgrade().unwrap();
+        app.set_copy_state(SharedString::from("Copied!"));
+
+        let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
+        let string = app.get_result().to_string();
+
+        ctx.set_contents(string.to_owned()).unwrap();
+    });
 
 
     window.run().unwrap();
