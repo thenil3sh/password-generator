@@ -6,6 +6,8 @@ use func::{charray, warray};
 slint::include_modules!();
 
 fn main() {
+    println!("oreo");
+
     let window = AppWindow::new().unwrap();
 
     // Wrap booleans in Rc<RefCell> to allow shared mutable access
