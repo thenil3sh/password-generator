@@ -614,3 +614,4 @@ fn num_char() -> char {
     let num = NARRAY.choose(&mut rand::thread_rng()).unwrap();
     *num
 }
+
