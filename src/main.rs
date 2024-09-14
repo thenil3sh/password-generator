@@ -7,17 +7,17 @@ slint::include_modules!();
 
 fn main() {
     println!("oreo");
- 
+
     let window = AppWindow::new().unwrap();
 
     // Wrap booleans in Rc<RefCell> to allow shared mutable access
-    let length : Rc<RefCell<u8>> = Rc::new(RefCell::new(6));
+    let length: Rc<RefCell<u8>> = Rc::new(RefCell::new(6));
     let symbols = Rc::new(RefCell::new(false));
     let nums = Rc::new(RefCell::new(false));
     let caps = Rc::new(RefCell::new(false));
     let word = Rc::new(RefCell::new(false));
 
-    // Clones for Slider : 
+    // Clones for Slider :
     let len_slide = window.as_weak();
     let len_clone = Rc::clone(&length);
     let sym_clone = Rc::clone(&symbols);
@@ -32,19 +32,27 @@ fn main() {
         *len_val = length as u8;
 
         let string = if *word_clone.borrow() {
-            warray(*len_val, *caps_clone.borrow(), *num_clone.borrow(), *sym_clone.borrow(), '-')
+            warray(
+                *len_val,
+                *caps_clone.borrow(),
+                *num_clone.borrow(),
+                *sym_clone.borrow(),
+                '-',
+            )
         } else {
-            charray(*len_val, *caps_clone.borrow(), *num_clone.borrow(), *sym_clone.borrow())
+            charray(
+                *len_val,
+                *caps_clone.borrow(),
+                *num_clone.borrow(),
+                *sym_clone.borrow(),
+            )
         };
 
         let string = SharedString::from(string);
         app.set_copy_state(SharedString::from("Copy Password"));
         app.set_result(string);
-        
     });
 
-
-    
     // Clone references for the symbol_toggle closure
     let sym_toggle = window.as_weak();
     let len_clone = Rc::clone(&length);
@@ -52,8 +60,6 @@ fn main() {
     let num_clone = Rc::clone(&nums);
     let caps_clone = Rc::clone(&caps);
     let word_clone = Rc::clone(&word);
-
-
 
     window.on_symtoggled(move || {
         let app = sym_toggle.upgrade().unwrap();
@@ -64,9 +70,20 @@ fn main() {
 
         // Use the updated values
         let string = if *word_clone.borrow() {
-            warray(*len_clone.borrow(), *caps_clone.borrow(), *num_clone.borrow(), *sym_val, '-')
+            warray(
+                *len_clone.borrow(),
+                *caps_clone.borrow(),
+                *num_clone.borrow(),
+                *sym_val,
+                '-',
+            )
         } else {
-            charray(*len_clone.borrow(), *caps_clone.borrow(), *num_clone.borrow(), *sym_val)
+            charray(
+                *len_clone.borrow(),
+                *caps_clone.borrow(),
+                *num_clone.borrow(),
+                *sym_val,
+            )
         };
 
         let string = SharedString::from(string);
@@ -101,7 +118,12 @@ fn main() {
                 '-',
             )
         } else {
-            charray(*len_clone.borrow(), *caps_clone.borrow(), *nums_value, *sym_clone.borrow())
+            charray(
+                *len_clone.borrow(),
+                *caps_clone.borrow(),
+                *nums_value,
+                *sym_clone.borrow(),
+            )
         };
         let string = SharedString::from(string);
 
@@ -124,9 +146,20 @@ fn main() {
         *caps_val = !*caps_val;
 
         let string = if *word_clone.borrow() {
-            warray(*len_clone.borrow(), *caps_val, *num_clone.borrow(), *sym_clone.borrow(), '-')
+            warray(
+                *len_clone.borrow(),
+                *caps_val,
+                *num_clone.borrow(),
+                *sym_clone.borrow(),
+                '-',
+            )
         } else {
-            charray(*len_clone.borrow(), *caps_val, *num_clone.borrow(), *sym_clone.borrow())
+            charray(
+                *len_clone.borrow(),
+                *caps_val,
+                *num_clone.borrow(),
+                *sym_clone.borrow(),
+            )
         };
         let string = SharedString::from(string);
 
@@ -180,7 +213,6 @@ fn main() {
 
         ctx.set_contents(string.to_owned()).unwrap();
     });
-
 
     window.run().unwrap();
 }
