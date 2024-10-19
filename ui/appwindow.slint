@@ -1,7 +1,7 @@
 
 import "./JetBrainsMono.ttf";
 import "./JetBrainsMono-Light.ttf";
-import { Button, VerticalBox, Switch, GridBox, Slider, AboutSlint, HorizontalBox } from "std-widgets.slint";
+import { Button, VerticalBox, Switch, GridBox, Slider, AboutSlint, HorizontalBox, ComboBox } from "std-widgets.slint";
 
 
 export component AppWindow inherits Window {
@@ -10,14 +10,15 @@ export component AppWindow inherits Window {
     out property <int> length: 6;
     out property <int> last_length;
     in-out property <string> copy_state: "Copy Password";
-
+    in property <bool> word_state : true;
+    callback mode_select(int);
+    callback edited_text(string);
     callback symtoggled <=> symbols.toggled;
     callback numtoggled <=> numbers.toggled;
     callback captoggled <=> capitals.toggled;
     callback wortoggled <=> words.toggled;
     callback len_mod(int);
     callback copy_clicked <=> copy.clicked;
-
 
     title: "Password Generator";
     min-height: 400px;
@@ -29,37 +30,67 @@ export component AppWindow inherits Window {
         height: parent.height;
         VerticalLayout {
             alignment: center;
-
             Rectangle {
+                TextInput {
+                    height: parent.height;
+                    width: parent.width;
+                    wrap: word-wrap;
+                    enabled: true;
+                }
+
                 width: Main.width;
                 height: Main.height * 40%;
-                Text {
-                    font-family: "JetBrains Mono";
-                    font-size: 32px;
-                    text: result;
-                    wrap: word-wrap;
-                    width: Main.width * 70%;
-                    horizontal-alignment: center;
+                text_area := TextInput {
+                    opacity: 0.1;
+                    //height: parent.width;
+                    //width: parent.width;
+                    edited => {
+                        self.set-selection-offsets(30, 100);
+                        edited_text(self.text);
+                    }
                 }
             }
 
             Rectangle {
-                width: Main.width;
-                height: 50px;
-                slide := Slider {
-                    height: parent.height;
-                    enabled: true;
-                    minimum: 6;
-                    maximum: 30;
-                    width: Main.width * 70%;
-                    changed(oreo) => {
-                        if last_length != floor(oreo) {
-                            length = floor(oreo);
-                            last_length = length;
-                            len_mod(length);
+                VerticalLayout {
+                    alignment: center;
+                    width: Main.width * 70/100;
+                    height: 50px;
+                    HorizontalLayout {
+                        alignment: center;
+                        mode := ComboBox {
+                            accessible-role: AccessibleRole.list;
+                            model: ["Random", "Passphrase"];
+                            width: 175px;
+                            selected => {
+                                if self.current-index == 0 {
+                                    words.enabled = true;
+                                } else {
+                                    words.enabled = false;
+                                }
+                                //mode_select(self.current-index);
+                            }
+                        }
+                    }
+                    
+                    
+                        slide := Slider {
+                            height: parent.height;
+                            enabled: true;
+                            minimum: 6;
+                            maximum: 30;
+                            width: Main.width * 70%;
+                            changed(oreo) => {
+                                if last_length != floor(oreo) {
+                                    length = floor(oreo);
+                                    last_length = length;
+                                    len_mod(length);
+                                }
+                            
                         }
                     }
                 }
+                
 
                 //x : Main.width * 20%;
                 }
@@ -110,6 +141,7 @@ export component AppWindow inherits Window {
                     width: 140px;
                     height: 50px;
                     text: "Words";
+                    
                     //x: slide.width / 80 * 30;
             }
             }
@@ -125,6 +157,7 @@ export component AppWindow inherits Window {
                             width: Main.width * 80%;
                             height: Main.height * 7%;
                             text: copy_state;
+                            
                             clicked => {
                                 self.text = copy_state;
                             }

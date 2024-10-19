@@ -1,9 +1,17 @@
 use slint::SharedString;
 use std::{cell::RefCell, rc::Rc};
 mod func;
+mod pass;
 use clipboard::{ClipboardContext, ClipboardProvider};
 use func::{charray, warray};
+use pass::pass_phrase;
 slint::include_modules!();
+
+#[derive(Debug)]
+enum Mode {
+    Random,
+    Passphrase,
+}
 
 fn main() {
     println!("oreo");
@@ -213,6 +221,20 @@ fn main() {
 
         ctx.set_contents(string.to_owned()).unwrap();
     });
+
+    // let mode_selected = window.as_weak();
+    // window.on_mode_select(move |i| {
+    //     let app= mode_selected.upgrade().unwrap();
+    //     match [Mode::Random, Mode::Passphrase][i as usize] {
+    //         Mode::Random => {
+    //             app.set_word_state(true);
+    //         }
+    //         Mode::Passphrase => {
+    //             app.set_word_state(false);
+
+    //         }
+    //     };
+    // });
 
     window.run().unwrap();
 }
