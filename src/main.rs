@@ -7,7 +7,7 @@ use func::{charray, warray};
 use pass::pass_phrase;
 slint::include_modules!();
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum Mode {
     Random,
     Passphrase,
@@ -18,48 +18,76 @@ fn main() {
 
     let window = AppWindow::new().unwrap();
 
-    // Wrap booleans in Rc<RefCell> to allow shared mutable access
     let length: Rc<RefCell<u8>> = Rc::new(RefCell::new(6));
     let symbols = Rc::new(RefCell::new(false));
     let nums = Rc::new(RefCell::new(false));
     let caps = Rc::new(RefCell::new(false));
     let word = Rc::new(RefCell::new(false));
+    let mode = Rc::new(RefCell::new(Mode::Random));
+    let base_pass = Rc::new(RefCell::new(String::new()));
 
-    // Clones for Slider :
     let len_slide = window.as_weak();
     let len_clone = Rc::clone(&length);
     let sym_clone = Rc::clone(&symbols);
     let num_clone = Rc::clone(&nums);
     let caps_clone = Rc::clone(&caps);
     let word_clone = Rc::clone(&word);
+    let mode_clone = Rc::clone(&mode);
+    let base_clone = Rc::clone(&base_pass);
 
     window.on_len_mod(move |length| {
         let app = len_slide.upgrade().unwrap();
+        let mode = mode_clone.borrow();
+        let mut base_pass = base_clone.borrow_mut();
+        match *mode {
+            Mode::Random => {
+                let mut len_val = len_clone.borrow_mut();
+                *len_val = length as u8;
 
-        let mut len_val = len_clone.borrow_mut();
-        *len_val = length as u8;
-
-        let string = if *word_clone.borrow() {
-            warray(
-                *len_val,
-                *caps_clone.borrow(),
-                *num_clone.borrow(),
-                *sym_clone.borrow(),
-                '-',
-            )
-        } else {
-            charray(
-                *len_val,
-                *caps_clone.borrow(),
-                *num_clone.borrow(),
-                *sym_clone.borrow(),
-            )
-        };
-
-        let string = SharedString::from(string);
+                *base_pass = if *word_clone.borrow() {
+                    warray(
+                        *len_val,
+                        *caps_clone.borrow(),
+                        *num_clone.borrow(),
+                        *sym_clone.borrow(),
+                        '-',
+                    )
+                } else {
+                    charray(
+                        *len_val,
+                        *caps_clone.borrow(),
+                        *num_clone.borrow(),
+                        *sym_clone.borrow(),
+                    )
+                };
+            }
+            Mode::Passphrase => {}
+        }
         app.set_copy_state(SharedString::from("Copy Password"));
-        app.set_result(string);
+        app.set_result(SharedString::from(&*base_pass.clone()));
     });
+
+
+    let mode_select = window.as_weak();
+    let sym_clone = Rc::clone(&symbols);
+    let num_clone = Rc::clone(&nums);
+    let base_clone = Rc::clone(&base_pass);
+    let mode_clone = Rc::clone(&mode);
+    window.on_mode_select(move |i| {
+        print!("mode changed! ");
+        let app = mode_select.upgrade().unwrap();
+        let mut mode = mode_clone.borrow_mut();
+        
+        *mode = if i {
+                println!("We're at random!!");
+                Mode::Random
+            } else {   
+                println!("Naw we're at passPhrase");
+                Mode::Passphrase
+        }
+    });
+
+
 
     // Clone references for the symbol_toggle closure
     let sym_toggle = window.as_weak();
@@ -68,37 +96,44 @@ fn main() {
     let num_clone = Rc::clone(&nums);
     let caps_clone = Rc::clone(&caps);
     let word_clone = Rc::clone(&word);
+    let mode_clone = Rc::clone(&mode);
+    let base_clone = Rc::clone(&base_pass);
 
     window.on_symtoggled(move || {
         let app = sym_toggle.upgrade().unwrap();
-
         // Mutate the symbols flag through the RefCell
         let mut sym_val = sym_clone.borrow_mut();
         *sym_val = !*sym_val; // Toggle the value
+        let mode = mode_clone.borrow();
+        let mut base_pass = base_clone.borrow_mut();
+
+        match *mode {
+            Mode::Random => {
+                *base_pass = if *word_clone.borrow() {
+                    warray(
+                        *len_clone.borrow(),
+                        *caps_clone.borrow(),
+                        *num_clone.borrow(),
+                        *sym_val,
+                        '-',
+                    )
+                } else {
+                    charray(
+                        *len_clone.borrow(),
+                        *caps_clone.borrow(),
+                        *num_clone.borrow(),
+                        *sym_val,
+                    )
+                };
+            }
+            Mode::Passphrase => {}
+        }
 
         // Use the updated values
-        let string = if *word_clone.borrow() {
-            warray(
-                *len_clone.borrow(),
-                *caps_clone.borrow(),
-                *num_clone.borrow(),
-                *sym_val,
-                '-',
-            )
-        } else {
-            charray(
-                *len_clone.borrow(),
-                *caps_clone.borrow(),
-                *num_clone.borrow(),
-                *sym_val,
-            )
-        };
-
-        let string = SharedString::from(string);
 
         println!("\nSymbols: {}", *sym_val);
         app.set_copy_state(SharedString::from("Copy Password"));
-        app.set_result(string);
+        app.set_result(SharedString::from(&*base_pass));
     });
 
     // Clone references for the number_toggle closure
@@ -108,36 +143,46 @@ fn main() {
     let num_clone = Rc::clone(&nums);
     let caps_clone = Rc::clone(&caps);
     let word_clone = Rc::clone(&word);
+    let mode_clone = Rc::clone(&mode);
+    let base_clone = Rc::clone(&base_pass);
 
     window.on_numtoggled(move || {
         let app = number_toggle.upgrade().unwrap();
-
         // Mutate the nums flag through the RefCell
         let mut nums_value = num_clone.borrow_mut();
         *nums_value = !*nums_value; // Toggle the value
+        let mut base_pass = base_clone.borrow_mut();
+        let mode = mode_clone.borrow();
+        
+        match *mode {
+            Mode::Random => {
+                *base_pass = if *word_clone.borrow() {
+                    warray(
+                        *len_clone.borrow(),
+                        *caps_clone.borrow(),
+                        *nums_value,
+                        *sym_clone.borrow(),
+                        '-',
+                    )
+                } else {
+                    charray(
+                        *len_clone.borrow(),
+                        *caps_clone.borrow(),
+                        *nums_value,
+                        *sym_clone.borrow(),
+                    )
+                };
+                
+            },
+            Mode::Passphrase => {
 
+            }
+        }
         // Use the updated values
-        let string = if *word_clone.borrow() {
-            warray(
-                *len_clone.borrow(),
-                *caps_clone.borrow(),
-                *nums_value,
-                *sym_clone.borrow(),
-                '-',
-            )
-        } else {
-            charray(
-                *len_clone.borrow(),
-                *caps_clone.borrow(),
-                *nums_value,
-                *sym_clone.borrow(),
-            )
-        };
-        let string = SharedString::from(string);
 
         println!("\nNumbers: {}", *nums_value);
         app.set_copy_state(SharedString::from("Copy Password"));
-        app.set_result(string);
+        app.set_result(SharedString::from(&*base_pass));
     });
 
     let capital_toggle = window.as_weak();
@@ -146,34 +191,45 @@ fn main() {
     let num_clone = Rc::clone(&nums);
     let cap_clone = Rc::clone(&caps);
     let word_clone = Rc::clone(&word);
+    let mode_clone = Rc::clone(&mode);
+    let base_clone = Rc::clone(&base_pass);
 
     window.on_captoggled(move || {
         let app = capital_toggle.upgrade().unwrap();
 
         let mut caps_val = cap_clone.borrow_mut();
         *caps_val = !*caps_val;
+        let mut base_pass = base_clone.borrow_mut();
+        let mode = mode_clone.borrow_mut();
 
-        let string = if *word_clone.borrow() {
-            warray(
-                *len_clone.borrow(),
-                *caps_val,
-                *num_clone.borrow(),
-                *sym_clone.borrow(),
-                '-',
-            )
-        } else {
-            charray(
-                *len_clone.borrow(),
-                *caps_val,
-                *num_clone.borrow(),
-                *sym_clone.borrow(),
-            )
-        };
-        let string = SharedString::from(string);
+        match *mode {
+            Mode::Random => {
+                *base_pass = if *word_clone.borrow() {
+                    warray(
+                        *len_clone.borrow(),
+                        *caps_val,
+                        *num_clone.borrow(),
+                        *sym_clone.borrow(),
+                        '-',
+                    )
+                } else {
+                    charray(
+                        *len_clone.borrow(),
+                        *caps_val,
+                        *num_clone.borrow(),
+                        *sym_clone.borrow(),
+                    )
+                };
+
+            },
+            Mode::Passphrase => {
+                
+            }
+        }
 
         println!("\nCapitls : {}", *caps_val);
         app.set_copy_state(SharedString::from("Copy Password"));
-        app.set_result(string);
+        app.set_result(SharedString::from(&*base_pass));
     });
 
     let word_toggle = window.as_weak();
@@ -182,59 +238,55 @@ fn main() {
     let num_clone = Rc::clone(&nums);
     let cap_clone = Rc::clone(&caps);
     let word_clone = Rc::clone(&word);
+    let mode_clone = Rc::clone(&mode);
+    let base_clone = Rc::clone(&base_pass);
 
     window.on_wortoggled(move || {
         let app = word_toggle.upgrade().unwrap();
         let mut wor_val = word_clone.borrow_mut();
         *wor_val = !*wor_val;
+        let mut base_pass = base_clone.borrow_mut();
+        let mode = mode_clone.borrow();
 
-        let string = if *wor_val {
-            warray(
-                *len_clone.borrow(),
-                *cap_clone.borrow(),
-                *num_clone.borrow(),
-                *sym_clone.borrow(),
-                '-',
-            )
-        } else {
-            charray(
-                *len_clone.borrow(),
-                *cap_clone.borrow(),
-                *num_clone.borrow(),
-                *sym_clone.borrow(),
-            )
-        };
-        let string = SharedString::from(string);
+        match *mode {
+            Mode::Random => {
+                *base_pass = if *wor_val {
+                    warray(
+                        *len_clone.borrow(),
+                        *cap_clone.borrow(),
+                        *num_clone.borrow(),
+                        *sym_clone.borrow(),
+                        '-',
+                    )
+                } else {
+                    charray(
+                        *len_clone.borrow(),
+                        *cap_clone.borrow(),
+                        *num_clone.borrow(),
+                        *sym_clone.borrow(),
+                    )
+                };
+                app.set_symbol_state(!app.get_symbol_state());
+                
+            }, Mode :: Passphrase => {
+
+            }
+        }
 
         println!("\nWord : {}", *wor_val);
         app.set_copy_state(SharedString::from("Copy Password"));
-        app.set_result(string);
+        app.set_result(SharedString::from(&*base_pass));
     });
 
     let copy_btn = window.as_weak();
+    let base_clone = Rc::clone(&base_pass);
     window.on_copy_clicked(move || {
         let app = copy_btn.upgrade().unwrap();
         app.set_copy_state(SharedString::from("Copied!"));
 
         let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-        let string = app.get_result().to_string();
-
-        ctx.set_contents(string.to_owned()).unwrap();
+        ctx.set_contents(base_clone.borrow().to_owned()).unwrap();
     });
-
-    // let mode_selected = window.as_weak();
-    // window.on_mode_select(move |i| {
-    //     let app= mode_selected.upgrade().unwrap();
-    //     match [Mode::Random, Mode::Passphrase][i as usize] {
-    //         Mode::Random => {
-    //             app.set_word_state(true);
-    //         }
-    //         Mode::Passphrase => {
-    //             app.set_word_state(false);
-
-    //         }
-    //     };
-    // });
 
     window.run().unwrap();
 }
