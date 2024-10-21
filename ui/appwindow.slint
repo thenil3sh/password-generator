@@ -46,7 +46,7 @@ export component AppWindow inherits Window {
                         edited_text(self.text);
                     }
                 }
-                    Text {
+                Main_text := Text {
                         width: parent.width;
                         vertical-alignment: center;
                         horizontal-alignment: center;
@@ -66,9 +66,11 @@ export component AppWindow inherits Window {
                     if word_state == true && self.current-index == 1 {
                         word_state = false; root.height = root.height - 40px; text_area.enabled = true;
                         mode_select(false);
+                        Main-text.opacity = 40%
                     } else if word_state == false && self.current-index == 0 {
                         word_state = true; root.height = root.height + 40px; text-area.enabled = false;
                         mode_select(true);
+                        Main-text.opacity = 100%;
                     }
                 }
             }

@@ -4,7 +4,7 @@ mod func;
 mod pass;
 use clipboard::{ClipboardContext, ClipboardProvider};
 use func::{charray, warray};
-use pass::pass_phrase;
+use pass::{pass_phrase, Placeholder};
 slint::include_modules!();
 
 #[derive(Debug, Clone, Copy)]
@@ -67,27 +67,49 @@ fn main() {
         app.set_result(SharedString::from(&*base_pass.clone()));
     });
 
+    let edited_text = window.as_weak();
+    
 
     let mode_select = window.as_weak();
     let sym_clone = Rc::clone(&symbols);
     let num_clone = Rc::clone(&nums);
+    let caps_clone = Rc::clone(&caps);
+    let words_clone = Rc::clone(&word);
     let base_clone = Rc::clone(&base_pass);
     let mode_clone = Rc::clone(&mode);
-    window.on_mode_select(move |i| {
+    let len_clone = Rc::clone(&length);
+    window.on_mode_select(move |random| {
         print!("mode changed! ");
         let app = mode_select.upgrade().unwrap();
         let mut mode = mode_clone.borrow_mut();
-        
-        *mode = if i {
-                println!("We're at random!!");
-                Mode::Random
-            } else {   
-                println!("Naw we're at passPhrase");
-                Mode::Passphrase
+        let mut base_pass = base_clone.borrow_mut();
+
+        *mode = if random {
+            println!("We're at random!!");
+            app.set_result(SharedString::from(if *words_clone.borrow() {
+                warray(
+                    *len_clone.borrow(),
+                    *caps_clone.borrow(),
+                    *num_clone.borrow(),
+                    *sym_clone.borrow(),
+                    '-',
+                )
+            } else {
+                charray(
+                    *len_clone.borrow(),
+                    *caps_clone.borrow(),
+                    *num_clone.borrow(),
+                    *sym_clone.borrow(),
+                )
+            }));
+            Mode::Random
+        } else {
+            println!("Naw we're at passPhrase");
+            base_pass.clear();
+            app.set_result(SharedString::from("Type in"));
+            Mode::Passphrase
         }
     });
-
-
 
     // Clone references for the symbol_toggle closure
     let sym_toggle = window.as_weak();
@@ -129,14 +151,14 @@ fn main() {
             Mode::Passphrase => {}
         }
 
-        // Use the updated values
+        
 
         println!("\nSymbols: {}", *sym_val);
         app.set_copy_state(SharedString::from("Copy Password"));
         app.set_result(SharedString::from(&*base_pass));
     });
 
-    // Clone references for the number_toggle closure
+    
     let number_toggle = window.as_weak();
     let len_clone = Rc::clone(&length);
     let sym_clone = Rc::clone(&symbols);
@@ -148,12 +170,11 @@ fn main() {
 
     window.on_numtoggled(move || {
         let app = number_toggle.upgrade().unwrap();
-        // Mutate the nums flag through the RefCell
         let mut nums_value = num_clone.borrow_mut();
         *nums_value = !*nums_value; // Toggle the value
         let mut base_pass = base_clone.borrow_mut();
         let mode = mode_clone.borrow();
-        
+
         match *mode {
             Mode::Random => {
                 *base_pass = if *word_clone.borrow() {
@@ -172,11 +193,8 @@ fn main() {
                         *sym_clone.borrow(),
                     )
                 };
-                
-            },
-            Mode::Passphrase => {
-
             }
+            Mode::Passphrase => {}
         }
         // Use the updated values
 
@@ -220,11 +238,8 @@ fn main() {
                         *sym_clone.borrow(),
                     )
                 };
-
-            },
-            Mode::Passphrase => {
-                
             }
+            Mode::Passphrase => {}
         }
 
         println!("\nCapitls : {}", *caps_val);
@@ -267,10 +282,8 @@ fn main() {
                     )
                 };
                 app.set_symbol_state(!app.get_symbol_state());
-                
-            }, Mode :: Passphrase => {
-
             }
+            Mode::Passphrase => {}
         }
 
         println!("\nWord : {}", *wor_val);

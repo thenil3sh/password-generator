@@ -104,3 +104,25 @@ pub fn pass_phrase(
     };
     char
 }
+
+pub fn placeholder() -> String {                 ////////////// // doesnt leave empty plaeholder alone :c
+    let string = [Placeholder::Formal, Placeholder::Formal, Placeholder::Formal, Placeholder::Formal, Placeholder::Easter]
+        .choose(&mut thread_rng())
+        .unwrap();
+    let string = match string {
+        Placeholder::Formal => *["Enter passphrase"].choose(&mut thread_rng()).unwrap(),
+        Placeholder::Easter => *[
+            "/* empty */",
+            "* empty *",
+            "* empty again *",
+            "swoosh~!",
+            "poof! gone",
+            "(⁠｡⁠•̀⁠ᴗ⁠-⁠)⁠✧",
+            "(O_O;)",
+            "no Text?",
+        ]
+        .choose(&mut thread_rng())
+        .unwrap(),
+    };
+    String::from(string)
+}
