@@ -35,6 +35,7 @@ export component AppWindow inherits Window {
         VerticalLayout {
             alignment: center;
             Rectangle {
+                
                 width: Main.width;
                 height: Main.height * (word_state ? 40% : 54%);
                 text_area := TextInput {
@@ -66,6 +67,10 @@ export component AppWindow inherits Window {
                             duration: 250ms;
                             easing : ease-out-back;
                         }
+                    }
+                    animate height {
+                        duration : 250ms;
+                        easing: ease-out-back;
                     }
             }
             HorizontalLayout {
@@ -115,7 +120,10 @@ export component AppWindow inherits Window {
                         }
                     }
                 }
-                
+                animate height {
+                     duration: 250ms;
+                     easing : ease-out-back;
+                }
 
                 //x : Main.width * 20%;
                 }
@@ -154,6 +162,7 @@ export component AppWindow inherits Window {
                         //x: slide.width / 80 * 30;
             }
                 }
+                
             }
 
             HorizontalLayout {
@@ -164,6 +173,10 @@ export component AppWindow inherits Window {
                 capitals := Switch {
                     text: "Capitals";
                     //x: slide.width / 80 * 30;
+                    animate y {
+                         duration: 250ms;
+                         easing: ease-out-back;
+                    }
             }
         }
                 Rectangle {
