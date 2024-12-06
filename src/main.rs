@@ -1,10 +1,11 @@
+#![windows_subsystem = "windows"]
 use slint::SharedString;
 use std::{cell::RefCell, rc::Rc};
 mod func;
 mod pass;
 use clipboard::{ClipboardContext, ClipboardProvider};
 use func::{charray, warray};
-use pass::{pass_phrase, Placeholder};
+use pass::{pass_phrase, placeholder, Include};
 slint::include_modules!();
 
 #[derive(Debug, Clone, Copy)]
@@ -12,6 +13,7 @@ enum Mode {
     Random,
     Passphrase,
 }
+
 
 fn main() {
     println!("oreo");
@@ -25,6 +27,7 @@ fn main() {
     let word = Rc::new(RefCell::new(false));
     let mode = Rc::new(RefCell::new(Mode::Random));
     let base_pass = Rc::new(RefCell::new(String::new()));
+    let choose: Rc<RefCell<Vec<Include>>> = Rc::new(RefCell::new(Vec::new()));
 
     let len_slide = window.as_weak();
     let len_clone = Rc::clone(&length);
@@ -41,6 +44,9 @@ fn main() {
         let mut base_pass = base_clone.borrow_mut();
         match *mode {
             Mode::Random => {
+                if base_pass.is_empty() {
+                    app.set_text_opacity(0.9);
+                }
                 let mut len_val = len_clone.borrow_mut();
                 *len_val = length as u8;
 
@@ -61,14 +67,15 @@ fn main() {
                     )
                 };
             }
-            Mode::Passphrase => {}
+            Mode::Passphrase => {
+                panic!("Ok what? PANIC BY LENGTH MODIFICATION");
+            }
         }
         app.set_copy_state(SharedString::from("Copy Password"));
         app.set_result(SharedString::from(&*base_pass.clone()));
     });
 
     let edited_text = window.as_weak();
-    
 
     let mode_select = window.as_weak();
     let sym_clone = Rc::clone(&symbols);
@@ -120,7 +127,7 @@ fn main() {
     let word_clone = Rc::clone(&word);
     let mode_clone = Rc::clone(&mode);
     let base_clone = Rc::clone(&base_pass);
-
+    let choose_clone = Rc::clone(&choose);
     window.on_symtoggled(move || {
         let app = sym_toggle.upgrade().unwrap();
         // Mutate the symbols flag through the RefCell
@@ -128,7 +135,6 @@ fn main() {
         *sym_val = !*sym_val; // Toggle the value
         let mode = mode_clone.borrow();
         let mut base_pass = base_clone.borrow_mut();
-
         match *mode {
             Mode::Random => {
                 *base_pass = if *word_clone.borrow() {
@@ -147,18 +153,42 @@ fn main() {
                         *sym_val,
                     )
                 };
+                app.set_result(SharedString::from(&*base_pass));
             }
-            Mode::Passphrase => {}
+            Mode::Passphrase => {
+                if base_pass.is_empty() {
+                    println!("Base pass is empty");
+                    return ();
+                }
+                let mut choose = choose_clone.borrow_mut();
+                let mut oreo = String::new();
+                choose.clear();
+                if base_pass.is_empty() {
+                    app.set_result(SharedString::from(placeholder()));
+                    app.set_text_opacity(0.4);
+                } else {
+                    for i in base_pass.chars() {
+                        oreo.push(pass_phrase(
+                            i,
+                            *sym_val,
+                            *num_clone.borrow(),
+                            '_',
+                            &mut choose,
+                            3,
+                        ));
+                    }
+                    *base_pass = oreo;
+                    app.set_result(SharedString::from(&*base_pass));
+                }
+            }
         }
-
-        
-
+        if !base_pass.is_empty() {
+            app.set_text_opacity(0.9);
+        }
         println!("\nSymbols: {}", *sym_val);
         app.set_copy_state(SharedString::from("Copy Password"));
-        app.set_result(SharedString::from(&*base_pass));
     });
 
-    
     let number_toggle = window.as_weak();
     let len_clone = Rc::clone(&length);
     let sym_clone = Rc::clone(&symbols);
@@ -167,6 +197,7 @@ fn main() {
     let word_clone = Rc::clone(&word);
     let mode_clone = Rc::clone(&mode);
     let base_clone = Rc::clone(&base_pass);
+    let choose_clone = Rc::clone(&choose);
 
     window.on_numtoggled(move || {
         let app = number_toggle.upgrade().unwrap();
@@ -194,10 +225,26 @@ fn main() {
                     )
                 };
             }
-            Mode::Passphrase => {}
+            Mode::Passphrase => {
+                let mut choose = choose_clone.borrow_mut();
+                let mut oreo = String::new();
+                choose.clear();
+                for i in base_pass.chars() {
+                    oreo.push(pass_phrase(
+                        i,
+                        *sym_clone.borrow(),
+                        *nums_value,
+                        '_',
+                        &mut choose,
+                        3,
+                    ));
+                }
+                *base_pass = oreo;
+            }
         }
-        // Use the updated values
-
+        if !base_pass.is_empty() {
+            app.set_text_opacity(0.9);
+        }
         println!("\nNumbers: {}", *nums_value);
         app.set_copy_state(SharedString::from("Copy Password"));
         app.set_result(SharedString::from(&*base_pass));
@@ -241,7 +288,9 @@ fn main() {
             }
             Mode::Passphrase => {}
         }
-
+        if !base_pass.is_empty() {
+            app.set_text_opacity(0.9);
+        }
         println!("\nCapitls : {}", *caps_val);
         app.set_copy_state(SharedString::from("Copy Password"));
         app.set_result(SharedString::from(&*base_pass));
@@ -283,9 +332,13 @@ fn main() {
                 };
                 app.set_symbol_state(!app.get_symbol_state());
             }
-            Mode::Passphrase => {}
+            Mode::Passphrase => {
+                panic!("No way!??? whaat");
+            }
         }
-
+        if !base_pass.is_empty() {
+            app.set_text_opacity(0.9);
+        }
         println!("\nWord : {}", *wor_val);
         app.set_copy_state(SharedString::from("Copy Password"));
         app.set_result(SharedString::from(&*base_pass));
@@ -299,6 +352,50 @@ fn main() {
 
         let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
         ctx.set_contents(base_clone.borrow().to_owned()).unwrap();
+    });
+
+    let edited_text = window.as_weak();
+    let sym_clone = Rc::clone(&symbols);
+    let num_clone = Rc::clone(&nums);
+    let choose_clone = Rc::clone(&choose);
+    let base_clone = Rc::clone(&base_pass);
+    window.on_edited_text(move |oreo| {
+        let mut choose = choose_clone.borrow_mut();
+        let app = edited_text.upgrade().unwrap();
+        let oreo = oreo.to_string();
+        let mut base_pass = base_clone.borrow_mut();
+        if oreo.is_empty() {
+            choose.clear();
+            base_pass.clear();
+            println!("oreo is empty?");
+            let placeholder = placeholder();
+            app.set_result(SharedString::from(&placeholder));
+            app.set_text_opacity(0.4);
+            return ();
+        }
+        while oreo.len() <= base_pass.len() {
+            base_pass.pop();
+        }
+        if oreo.len() > base_pass.len() {
+            base_pass.push(pass_phrase(
+                match oreo.chars().rev().nth(0) {
+                    Some(x) => x,
+                    None => {
+                        println!("Breaks!!");
+                        ' '
+                    }
+                },
+                *sym_clone.borrow(),
+                *num_clone.borrow(),
+                '.',
+                &mut choose,
+                2,
+            ));
+        }
+        if app.get_text_opacity() < 1.0 {
+            app.set_text_opacity(1.0);
+        }
+        app.set_result(SharedString::from(&*base_pass));
     });
 
     window.run().unwrap();

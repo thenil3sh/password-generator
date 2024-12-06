@@ -1,4 +1,3 @@
-
 import "./JetBrainsMono.ttf";
 import "./JetBrainsMono-Light.ttf";
 import "./Aptos.ttf";
@@ -6,13 +5,16 @@ import { Button, VerticalBox, Switch, GridBox, Slider, AboutSlint, HorizontalBox
 
 
 export component AppWindow inherits Window {
-    in property <string> result: "Generates a password";
+
+    in-out property <string> result: "Generates a password";
     in property <bool> symbol: false;
     out property <int> length: 6;
     out property <int> last_length;
     in-out property <string> copy_state: "Copy Password";
     in-out property <bool> word_state: true;
     in property <bool> symbol_state : true;
+    in-out property <float> text_opacity : 0.4;
+
     callback mode_select(bool);
     callback edited_text(string);
     callback symtoggled <=> symbols.toggled;
@@ -23,7 +25,7 @@ export component AppWindow inherits Window {
     callback copy_clicked <=> copy.clicked;
 
     title: "Password Generator";
-    min-height: 400px;
+    min-height: 450px;
     min-width: 350px;
     Main := Rectangle {
         x: 0px;
@@ -33,11 +35,10 @@ export component AppWindow inherits Window {
         VerticalLayout {
             alignment: center;
             Rectangle {
-
                 width: Main.width;
-                height: Main.height * 40%;
+                height: Main.height * (word_state ? 40% : 54%);
                 text_area := TextInput {
-                    opacity: 0.5;
+                    opacity: 0;
                     enabled: !word_state;
                     //height: parent.width;
                     //width: parent.width;
@@ -47,13 +48,24 @@ export component AppWindow inherits Window {
                     }
                 }
                 Main_text := Text {
+                        x : (root.width - self.width)/2;
+                        y : (parent.height - self.height)/2;
                         width: parent.width;
                         vertical-alignment: center;
                         horizontal-alignment: center;
-                        font-family: "JetBrains Mono NL";
+                        font-family: "JetBrains Mono";
                         text : result;
+                        opacity : text_opacity;
                         font-size: 32px;
-                        wrap: char-wrap;
+                        wrap: word-wrap;
+                        animate x, opacity {
+                            easing : ease-out-back;
+                            duration: 500ms;
+                        }
+                        animate y {
+                            duration: 250ms;
+                            easing : ease-out-back;
+                        }
                     }
             }
             HorizontalLayout {
@@ -66,12 +78,13 @@ export component AppWindow inherits Window {
                     if word_state == true && self.current-index == 1 {
                         word_state = false; root.height = root.height - 40px; text_area.enabled = true;
                         mode_select(false);
-                        Main-text.opacity = 40%
+                        text_opacity = 40%
                     } else if word_state == false && self.current-index == 0 {
                         word_state = true; root.height = root.height + 40px; text-area.enabled = false;
                         mode_select(true);
-                        Main-text.opacity = 100%;
+                        text_opacity = 100%;
                     }
+
                 }
             }
         }
@@ -179,7 +192,7 @@ export component AppWindow inherits Window {
 
             Rectangle {
                 width: Main.width;
-                height: 50px;
+                height: 75px;
                 VerticalLayout {
                     alignment: center;
                     HorizontalLayout {

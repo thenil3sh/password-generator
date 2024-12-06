@@ -31,6 +31,11 @@ pub fn pass_phrase(
     choose: &mut Vec<Include>,
     crazy_lvl: u8,
 ) -> char {
+    if choose.is_empty() {
+        if numbers { choose.push(Include::Numbers);}
+        if symbols { choose.push(Include::Symbols);}
+        choose.push(Include::Characters);
+    }
     let num_collection = if numbers {
         choose.push(Include::Numbers);
         HashMap::from([
@@ -110,6 +115,7 @@ pub fn placeholder() -> String {                 ////////////// // doesnt leave 
         .choose(&mut thread_rng())
         .unwrap();
     let string = match string {
+
         Placeholder::Formal => *["Enter passphrase"].choose(&mut thread_rng()).unwrap(),
         Placeholder::Easter => *[
             "/* empty */",
