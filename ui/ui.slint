@@ -1,0 +1,64 @@
+import "./JetBrainsMono-Light.ttf";
+export component Button {
+    in property <string> text : "Dummy";
+    in property <length> font-size : 20px;
+    in property <length> border-radius : 0px;
+    in property <bool> drop-shadow : false;
+    in property <color> bgcolor : orange;
+    callback clicked;
+    rect := Rectangle {
+        background : bgcolor;
+        height : root.height;
+        width : root.width;
+        border-radius: root.border-radius;
+        drop-shadow-color: self.background.darker(1).with-alpha(0.2);
+        drop-shadow-blur: root.height/3;
+        drop-shadow-offset-y: 10px;
+        text := Text {
+            text : root.text;
+            font-size: root.font-size;
+            font-family : "JetBrains Mono";
+            animate font-size {
+                duration : 200ms;
+                easing: ease-out;
+            }
+        }
+        animate height, width, y, drop-shadow-offset-y, drop-shadow-color, background {
+            duration : 200ms;
+            easing : ease-out;
+        }
+        
+    }
+    ta := TouchArea{
+        clicked => {
+            root.clicked();
+        }
+    }
+    states [
+        raised when ta.has-hover && !ta.pressed : {
+            rect.height : root.height + 10px;
+            rect.width : root.width + 20px;
+            text.font-size : font-size + 3.5px;
+            rect.y : -20px;
+            rect.drop-shadow-offset-y : 20px;
+            rect.drop-shadow-blur : 50px;
+        }
+        
+        clicked when ta.has-hover && ta.pressed : {
+            rect.background : root.bgcolor.darker(0.05);
+
+        }
+    ]
+}
+
+export component Screen {
+    Rectangle {
+        Button {
+            border-radius: 10px;
+            height : 40px;
+            width : 100px;
+            text : "Click!";
+        }
+        background: white;
+    }
+}
